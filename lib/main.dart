@@ -1,6 +1,7 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables, prefer_const_constructors
 import 'package:flutter/material.dart';
 import 'package:fluttercourse/auth/login.dart';
+import 'package:fluttercourse/auth/signup.dart';
 import 'package:fluttercourse/homepage.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -23,6 +24,10 @@ class _MyAppState extends State<MyApp> {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       home: Login(),
+      routes: {
+        "signup" : (context) => SignUp() , 
+        "login" : (context) => Login()
+      },
     );
   }
 }
