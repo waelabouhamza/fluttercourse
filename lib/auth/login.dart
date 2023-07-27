@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttercourse/components/custombuttonauth.dart';
 import 'package:fluttercourse/components/customlogoauth.dart';
 import 'package:fluttercourse/components/textformfield.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -17,6 +18,30 @@ class _LoginState extends State<Login> {
   TextEditingController password = TextEditingController();
 
   GlobalKey<FormState> formState = GlobalKey<FormState>();
+
+  Future signInWithGoogle() async {
+    // Trigger the authentication flow
+    final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+
+    if (googleUser == null) {
+      return; //==================
+    }
+
+    // Obtain the auth details from the request
+    final GoogleSignInAuthentication? googleAuth =
+        await googleUser?.authentication;
+
+    // Create a new credential
+    final credential = GoogleAuthProvider.credential(
+      accessToken: googleAuth?.accessToken,
+      idToken: googleAuth?.idToken,
+    );
+
+    // Once signed in, return the UserCredential
+    await FirebaseAuth.instance.signInWithCredential(credential);
+
+    Navigator.of(context).pushNamedAndRemoveUntil("homepage", (route) => false);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -66,13 +91,50 @@ class _LoginState extends State<Login> {
                         return "Can't To be Empty";
                       }
                     }),
-                Container(
-                  margin: const EdgeInsets.only(top: 10, bottom: 20),
-                  alignment: Alignment.topRight,
-                  child: const Text(
-                    "Forgot Password ?",
-                    style: TextStyle(
-                      fontSize: 14,
+                InkWell(
+                  onTap: () async {
+                    if (email.text == "") {
+                      AwesomeDialog(
+                        context: context,
+                        dialogType: DialogType.error,
+                        animType: AnimType.rightSlide,
+                        title: 'Error',
+                        desc:
+                            "الرجاء كتابة البريد الالكتروني ثم قم بالضغط على Forget Password",
+                      ).show();
+                      return;
+                    }
+
+                    try {
+                      await FirebaseAuth.instance
+                          .sendPasswordResetEmail(email: email.text);
+                      AwesomeDialog(
+                        context: context,
+                        dialogType: DialogType.success,
+                        animType: AnimType.rightSlide,
+                        title: 'Error',
+                        desc:
+                            'لقد تم ارسال لينك لاعادة تعيين كلمة المرور الى برديك الالكتروني الرجاء الذهب الى البريد والضغط على اللينك',
+                      ).show();
+                    } catch (e) {
+                      AwesomeDialog(
+                              context: context,
+                              dialogType: DialogType.error,
+                              animType: AnimType.rightSlide,
+                              title: 'Error',
+                              desc:
+                                  "الرجاء التاكد من ان البريد الالكتروني الذي ادخلته صحيح ثم قم باعادة المحاولة")
+                          .show();
+                    }
+                  },
+                  child: Container(
+                    margin: const EdgeInsets.only(top: 10, bottom: 20),
+                    alignment: Alignment.topRight,
+                    child: const Text(
+                      "Forgot Password ?",
+                      style: TextStyle(
+                        fontSize: 14,
+                      ),
                     ),
                   ),
                 ),
@@ -92,6 +154,7 @@ class _LoginState extends State<Login> {
                     } else {
                       FirebaseAuth.instance.currentUser!
                           .sendEmailVerification();
+
                       AwesomeDialog(
                         context: context,
                         dialogType: DialogType.error,
@@ -134,7 +197,9 @@ class _LoginState extends State<Login> {
                   borderRadius: BorderRadius.circular(20)),
               color: Colors.red[700],
               textColor: Colors.white,
-              onPressed: () {},
+              onPressed: () {
+                signInWithGoogle();
+              },
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
