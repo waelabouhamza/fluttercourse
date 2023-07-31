@@ -1,4 +1,5 @@
 // ignore_for_file: prefer_const_literals_to_create_immutables
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
@@ -64,16 +65,35 @@ class _HomepageState extends State<Homepage> {
                 gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: 2, mainAxisExtent: 160),
                 itemBuilder: (context, i) {
-                  return Card(
-                    child: Container(
-                      padding: EdgeInsets.all(10),
-                      child: Column(children: [
-                        Image.asset(
-                          "images/folder.png",
-                          height: 100,
-                        ),
-                        Text("${data[i]['name']}")
-                      ]),
+                  return InkWell(
+                    onLongPress: (){
+                        AwesomeDialog(
+                              context: context,
+                              dialogType: DialogType.warning,
+                              animType: AnimType.rightSlide,
+                              title: 'Error',
+                              desc: 'هل انت متأكد من عملية الحذف',
+                              btnCancelOnPress: (){
+                                print("Cancel") ; 
+                                 
+                              },
+                              btnOkOnPress: () async {
+                                 await FirebaseFirestore.instance.collection("categories").doc(data[i].id).delete() ; 
+                                 Navigator.of(context).pushReplacementNamed("homepage") ; 
+                              }
+                            ).show();
+                    },
+                    child: Card(
+                      child: Container(
+                        padding: EdgeInsets.all(10),
+                        child: Column(children: [
+                          Image.asset(
+                            "images/folder.png",
+                            height: 100,
+                          ),
+                          Text("${data[i]['name']}")
+                        ]),
+                      ),
                     ),
                   );
                 },
