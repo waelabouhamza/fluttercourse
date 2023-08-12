@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttercourse/components/custombuttonauth.dart';
 import 'package:fluttercourse/components/customtextfieldadd.dart';
@@ -18,16 +19,32 @@ class _AddCategoryState extends State<AddCategory> {
   CollectionReference categories =
       FirebaseFirestore.instance.collection("categories");
 
+  bool isLoading = false;
+
   addCategory() async {
     if (formState.currentState!.validate()) {
       try {
-        DocumentReference response = await categories.add({"name": name.text});
-        Navigator.of(context).pushReplacementNamed("homepage");
+        isLoading = true;
+        setState(() {});
+        DocumentReference response = await categories.add(
+            {"name": name.text, "id": FirebaseAuth.instance.currentUser!.uid});
+
+        Navigator.of(context)
+            .pushNamedAndRemoveUntil("homepage", (route) => false);
       } catch (e) {
+        isLoading = false;
+        setState(() {});
         print("Error $e ");
       }
     }
   }
+
+    @override
+  void dispose() {
+    // TODO: implement dispose
+    super.dispose();
+    name.dispose() ; 
+    }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +52,7 @@ class _AddCategoryState extends State<AddCategory> {
       appBar: AppBar(title: Text("Add Category")),
       body: Form(
         key: formState,
-        child: Column(children: [
+        child:isLoading ? Center(child: CircularProgressIndicator())  : Column(children: [
           Container(
             padding: EdgeInsets.symmetric(vertical: 20, horizontal: 25),
             child: CustomTextFormAdd(

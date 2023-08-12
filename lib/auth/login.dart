@@ -176,6 +176,9 @@ class _LoginState extends State<Login> {
                             ).show();
                           }
                         } on FirebaseAuthException catch (e) {
+                             isLoading = false;
+                             setState(() {});
+
                           if (e.code == 'user-not-found') {
                             print('No user found for that email.');
                             AwesomeDialog(

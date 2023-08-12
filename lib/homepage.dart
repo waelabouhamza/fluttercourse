@@ -3,6 +3,8 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttercourse/categories/edit.dart';
+import 'package:fluttercourse/note/view.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 class Homepage extends StatefulWidget {
@@ -18,8 +20,10 @@ class _HomepageState extends State<Homepage> {
   bool isLoading = true;
 
   getData() async {
-    QuerySnapshot querySnapshot =
-        await FirebaseFirestore.instance.collection("categories").get(); 
+    QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection("categories")
+        .where("id", isEqualTo: FirebaseAuth.instance.currentUser!.uid)
+        .get();
     data.addAll(querySnapshot.docs);
     isLoading = false;
 
@@ -66,22 +70,34 @@ class _HomepageState extends State<Homepage> {
                     crossAxisCount: 2, mainAxisExtent: 160),
                 itemBuilder: (context, i) {
                   return InkWell(
-                    onLongPress: (){
-                        AwesomeDialog(
-                              context: context,
-                              dialogType: DialogType.warning,
-                              animType: AnimType.rightSlide,
-                              title: 'Error',
-                              desc: 'هل انت متأكد من عملية الحذف',
-                              btnCancelOnPress: (){
-                                print("Cancel") ; 
-                                 
-                              },
-                              btnOkOnPress: () async {
-                                 await FirebaseFirestore.instance.collection("categories").doc(data[i].id).delete() ; 
-                                 Navigator.of(context).pushReplacementNamed("homepage") ; 
-                              }
-                            ).show();
+                    onTap: () {
+                      Navigator.of(context).push(MaterialPageRoute(
+                          builder: (context) =>
+                              NoteView(categoryid: data[i].id)));
+                    },
+                    onLongPress: () {
+                      AwesomeDialog(
+                          context: context,
+                          dialogType: DialogType.warning,
+                          animType: AnimType.rightSlide,
+                          title: 'Error',
+                          desc: "اختر ماذا تريد",
+                          btnCancelText: "حذف",
+                          btnOkText: "تعديل",
+                          btnCancelOnPress: () async {
+                            await FirebaseFirestore.instance
+                                .collection("categories")
+                                .doc(data[i].id)
+                                .delete();
+                            Navigator.of(context)
+                                .pushReplacementNamed("homepage");
+                          },
+                          btnOkOnPress: () async {
+                            Navigator.of(context).push(MaterialPageRoute(
+                                builder: (context) => EditCategory(
+                                    docid: data[i].id,
+                                    oldname: data[i]['name'])));
+                          }).show();
                     },
                     child: Card(
                       child: Container(
@@ -91,7 +107,13 @@ class _HomepageState extends State<Homepage> {
                             "images/folder.png",
                             height: 100,
                           ),
-                          Text("${data[i]['name']}")
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text("${data[i]['name']}"),
+                            ],
+                          )
                         ]),
                       ),
                     ),

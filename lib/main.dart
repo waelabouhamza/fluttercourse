@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:fluttercourse/auth/login.dart';
 import 'package:fluttercourse/auth/signup.dart';
 import 'package:fluttercourse/categories/add.dart';
+import 'package:fluttercourse/filter.dart';
 import 'package:fluttercourse/homepage.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -46,15 +47,17 @@ class _MyAppState extends State<MyApp> {
                   fontWeight: FontWeight.bold),
               iconTheme: IconThemeData(color: Colors.orange))),
       debugShowCheckedModeBanner: false,
-      home: (FirebaseAuth.instance.currentUser != null &&
-              FirebaseAuth.instance.currentUser!.emailVerified)
-          ? Homepage()
-          : Login(),
+      home:FilterFirestore() , 
+      //  (FirebaseAuth.instance.currentUser != null &&
+      //         FirebaseAuth.instance.currentUser!.emailVerified)
+      //     ? Homepage()
+      //     : Login(),
       routes: {
         "signup": (context) => SignUp(),
         "login": (context) => Login(),
         "homepage": (context) => Homepage()  , 
-        "addcategory": (context) => AddCategory() 
+        "addcategory": (context) => AddCategory()  , 
+        "filterfirestore" : (context) => FilterFirestore()
       },
     );
   }
